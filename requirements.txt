@@ -1,0 +1,3 @@
+ao3-api~=2.2.0
+feedgen~=0.9.0
+Flask~=2.0.2
