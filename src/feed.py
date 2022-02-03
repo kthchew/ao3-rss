@@ -11,6 +11,7 @@ def for_work(work_id):
     except AO3.utils.InvalidIdError:
         return Response("No work found", 404)
     feed = FeedGenerator()
+    feed.id(work.url)
     feed.title(work.title)
     feed.author({'name': work.authors[0].username, 'email': work.authors[0].username})
     feed.link(href=work.url, rel='alternate')
@@ -19,9 +20,10 @@ def for_work(work_id):
     chapter: AO3.Chapter
     for chapter in work.chapters[-3:]:
         entry = feed.add_entry()
+        entry.id(f"{work.url}/chapters/{chapter.id}")
         entry.title(f"{chapter.number}. {chapter.title}")
         entry.link(href=f"{work.url}/chapters/{chapter.id}")
-        entry.author({'email': work.authors[0].username})  # RSS requires email, so just put the name there
+        entry.author({'name': work.authors[0].username})
         entry.content(chapter.summary + '\n' + chapter.text)
 
-    return feed.rss_str()
+    return feed.atom_str()
