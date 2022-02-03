@@ -5,8 +5,8 @@ COPY ./requirements.txt /app/
 WORKDIR /app
 
 RUN apk add --no-cache py-pip py3-lxml \
-    && pip install -r requirements.txt \
-    && pip install gunicorn
+    && pip install --no-cache-dir -r requirements.txt \
+    && pip install --no-cache-dir gunicorn
 
 COPY ./ao3_rss /app/ao3_rss
 
