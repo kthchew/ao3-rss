@@ -1,12 +1,18 @@
 # AO3 RSS
 
-This web server can be used to serve RSS feeds for works from Archive of Our Own (AO3).
+This Flask app can be used to serve RSS feeds for works from Archive of Our Own (AO3).
 
-## Usage
+## Quick Start
+
+### Docker
+
+The Docker image uses a [Gunicorn](https://gunicorn.org/) server.
 
 ```shell
-cd src
-FLASK_APP=server flask run
+git clone https://github.com/kthchew/ao3-rss.git
+cd ao3-rss
+docker build -t ao3-rss .
+docker run --publish 127.0.0.1:8000:8000 ao3-rss
 ```
 
-Then go to `http://127.0.0.1:5000/works/<work_id>`
+Then go to `http://127.0.0.1:8000/works/<work_id>`
