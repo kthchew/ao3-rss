@@ -24,7 +24,11 @@ def for_work(work_id):
         entry.title(f"{chapter.number}. {chapter.title}")
         entry.link(href=f"{work.url}/chapters/{chapter.id}")
         entry.author({'name': work.authors[0].username})
-        formatted_text = chapter.text.replace('\n', '<br>')
-        entry.content(formatted_text, type='html')
+        formatted_text = ""
+        for text in [chapter.summary, chapter.start_notes, chapter.text, chapter.end_notes]:
+            if text != "":
+                formatted_text += text + '<hr>'
+        # Remove last <hr>
+        entry.content(formatted_text[:-4].replace('\n', '<br><br>'), type='html')
 
     return feed.atom_str()
