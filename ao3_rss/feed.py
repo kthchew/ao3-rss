@@ -24,6 +24,7 @@ def for_work(work_id):
         entry.title(f"{chapter.number}. {chapter.title}")
         entry.link(href=f"{work.url}/chapters/{chapter.id}")
         entry.author({'name': work.authors[0].username})
-        entry.content(chapter.summary + '\n' + chapter.text)
+        formatted_text = chapter.text.replace('\n', '<br>')
+        entry.content(formatted_text, type='html')
 
     return feed.atom_str()
