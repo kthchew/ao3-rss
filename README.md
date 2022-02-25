@@ -1,6 +1,6 @@
 # AO3 RSS
 
-This Flask app can be used to serve RSS feeds for works from Archive of Our Own (AO3).
+This Flask app can be used to serve RSS and Atom feeds for works and series from Archive of Our Own (AO3).
 
 ## Quick Start
 
