@@ -25,7 +25,7 @@ services:
     restart: unless-stopped
 ```
 
-Then go to `http://127.0.0.1:8000/works/<work_id>`
+Then go to `http://127.0.0.1:8000/works/<work_id>` or `http://127.0.0.1:8000/series/<series_id>`
 
 #### Environment Variables
 
