@@ -8,7 +8,7 @@ def work_base_feed(work):
     feed = FeedGenerator()
     feed.title(work.title)
     feed.link(href=work.url, rel='alternate')
-    feed.subtitle(work.summary if work.summary != "" else ("(No summary available.)"))
+    feed.subtitle(work.summary if work.summary != "" else "(No summary available.)")
 
     entries = []
     chapter: AO3.Chapter
@@ -62,7 +62,7 @@ def series_base_feed(series):
     feed = FeedGenerator()
     feed.title(series.name)
     feed.link(href=series.url, rel='alternate')
-    feed.subtitle(series.description if series.description != "" else "(No description available.")
+    feed.subtitle(series.description if series.description != "" else "(No description available.)")
     
     entries = []
     work: AO3.Work
