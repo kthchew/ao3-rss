@@ -1,4 +1,5 @@
 import AO3
+import ao3_rss.config as config
 from feedgen.feed import FeedGenerator
 from feedgen.feed import FeedEntry
 from flask import make_response
@@ -11,8 +12,9 @@ def work_base_feed(work):
     feed.subtitle(work.summary if work.summary != "" else "(No summary available.)")
 
     entries = []
+    num_of_entries = config.number_of_chapters_in_feed
     chapter: AO3.Chapter
-    for chapter in work.chapters[-3:]:
+    for chapter in work.chapters[-num_of_entries:]:
         entry: FeedEntry = feed.add_entry()
         entry.id(f"{work.url}/chapters/{chapter.id}")
         entry.title(f"{chapter.number}. {chapter.title}")
@@ -65,8 +67,9 @@ def series_base_feed(series):
     feed.subtitle(series.description if series.description != "" else "(No description available.)")
     
     entries = []
+    num_of_entries = config.number_of_works_in_feed
     work: AO3.Work
-    for work in series.work_list[-3:]:
+    for work in series.work_list[-num_of_entries:]:
         entry: FeedEntry = feed.add_entry()
         entry.id(work.url)
         entry.title(work.title)
