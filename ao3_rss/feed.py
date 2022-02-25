@@ -8,7 +8,7 @@ def work_base_feed(work):
     feed = FeedGenerator()
     feed.title(work.title)
     feed.link(href=work.url, rel='alternate')
-    feed.subtitle(work.summary)
+    feed.subtitle(work.summary if work.summary != "" else ("(No summary available.)"))
 
     entries = []
     chapter: AO3.Chapter
@@ -43,11 +43,26 @@ def work_atom(work_id):
 
     return feed.atom_str()
 
+def work_rss(work_id):
+    try:
+        work = AO3.Work(work_id)
+    except AO3.utils.AuthError:
+        return make_response(("Requires authentication", 401))
+    except AO3.utils.InvalidIdError:
+        return make_response(("No work found", 404))
+    feed, entries = work_base_feed(work)
+
+    feed.author({'name': work.authors[0].username, 'email': 'do-not-reply@archiveofourown.org'})
+    for entry in entries:
+        entry.author({'name': work.authors[0].username, 'email': 'do-not-reply@archiveofourown.org'})
+
+    return feed.rss_str()
+
 def series_base_feed(series):
     feed = FeedGenerator()
     feed.title(series.name)
     feed.link(href=series.url, rel='alternate')
-    feed.subtitle(series.description)
+    feed.subtitle(series.description if series.description != "" else "(No description available.")
     
     entries = []
     work: AO3.Work
@@ -56,7 +71,7 @@ def series_base_feed(series):
         entry.id(work.url)
         entry.title(work.title)
         entry.link(href=work.url)
-        entry.content(work.summary)
+        entry.content(work.summary if work.summary != "" else "(No summary available.)")
         work.reload(load_chapters=False)
         # Assume UTC
         entry.published(str(work.date_published) + '+00:00')
@@ -82,3 +97,20 @@ def series_atom(series_id):
         entry.author({'name': work.authors[0].username})
 
     return feed.atom_str()
+
+def series_rss(series_id):
+    try:
+        series = AO3.Series(series_id)
+    except AO3.utils.AuthError:
+        return make_response(("Requires authentication", 401))
+    except AO3.utils.InvalidIdError:
+        return make_response(("No series found", 404))
+    feed, entries = series_base_feed(series)
+
+    feed.author({'name': series.creators[0].username, 'email': 'do-not-reply@archiveofourown.org'})
+    for entry in entries:
+        work_id = AO3.utils.workid_from_url(entry.id())
+        work = AO3.Work(work_id, load=True, load_chapters=False)
+        entry.author({'name': work.authors[0].username, 'email': 'do-not-reply@archiveofourown.org'})
+    
+    return feed.rss_str()

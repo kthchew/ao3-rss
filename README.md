@@ -25,7 +25,7 @@ services:
     restart: unless-stopped
 ```
 
-Then go to `http://127.0.0.1:8000/works/<work_id>` or `http://127.0.0.1:8000/series/<series_id>`
+Then go to `http://127.0.0.1:8000/works/<work_id>` or `http://127.0.0.1:8000/series/<series_id>`. These will output Atom feeds. If you need RSS, you can add just `/rss` to the end: `http://127.0.0.1:8000/works/<work_id>/rss`.
 
 #### Environment Variables
 
