@@ -36,3 +36,14 @@ You can set environment variables in the Docker container to change its behavior
 | `ADDRESS`           | `0.0.0.0` | IP Address    | An IP address to bind to (e.g. `0.0.0.0` to bind to all interfaces) |
 | `PORT`              | `8000`    | Port          | A port to bind to                                                   |
 | `GUNICORN_CMD_ARGS` | *unset*   | Any arguments | Additional arguments you wish to pass to Gunicorn                   |
+
+### Development
+
+For development purposes, you can also just use `flask run`:
+
+```shell
+git clone https://github.com/kthchew/ao3-rss.git
+cd ao3-rss
+pip install -r requirements.txt
+FLASK_APP=ao3_rss.server flask run
+```
