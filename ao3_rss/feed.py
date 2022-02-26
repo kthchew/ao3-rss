@@ -21,8 +21,12 @@ def work_base_feed(work: AO3.Work):
         entry.title(f"{chapter.number}. {chapter.title}")
         entry.link(href=f"{work.url}/chapters/{chapter.id}")
         formatted_text = ""
-        for text in [chapter.summary, chapter.start_notes, chapter.text, chapter.end_notes]:
+        for id, text in enumerate([chapter.summary, chapter.start_notes, chapter.text, chapter.end_notes]):
             if text != "":
+                if id == 0: # is summary
+                    formatted_text += '<b>Summary: </b>'
+                elif id == 1 or id == 3:
+                    formatted_text += '<b>Notes: </b>'
                 formatted_text += text + '<hr>'
         # Remove last <hr>
         entry.content(formatted_text[:-4].replace('\n', '<br><br>'), type='html')
