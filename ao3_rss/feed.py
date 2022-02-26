@@ -3,6 +3,7 @@ import ao3_rss.config as config
 from feedgen.feed import FeedGenerator
 from feedgen.feed import FeedEntry
 from flask import make_response
+from flask import render_template
 
 
 def work_base_feed(work: AO3.Work):
@@ -33,11 +34,11 @@ def work_atom(work_id: int):
     try:
         work = AO3.Work(work_id)
     except AO3.utils.AuthError:
-        return make_response("Requires authentication", 401)
+        return make_response(render_template("auth_required.html"), 401)
     except AO3.utils.InvalidIdError:
-        return make_response("No work found", 404)
+        return make_response(render_template("no_work.html"), 404)
     if config.block_explicit_works and work.rating == 'Explicit':
-        return make_response('Explicit works are blocked', 403)
+        return make_response(render_template("explicit_block.html"), 403)
     feed, entries = work_base_feed(work)
 
     feed.id(work.url)
@@ -51,11 +52,11 @@ def work_rss(work_id: int):
     try:
         work = AO3.Work(work_id)
     except AO3.utils.AuthError:
-        return make_response("Requires authentication", 401)
+        return make_response(render_template("auth_required.html"), 401)
     except AO3.utils.InvalidIdError:
-        return make_response("No work found", 404)
+        return make_response(render_template("no_work.html"), 404)
     if config.block_explicit_works and work.rating == 'Explicit':
-        return make_response('Explicit works are blocked', 403)
+        return make_response(render_template("explicit_block.html"), 403)
     feed, entries = work_base_feed(work)
 
     feed.author({'name': work.authors[0].username, 'email': 'do-not-reply@archiveofourown.org'})
@@ -94,9 +95,9 @@ def series_atom(series_id: int, exclude_explicit=False):
     try:
         series = AO3.Series(series_id)
     except AO3.utils.AuthError:
-        return make_response("Requires authentication", 401)
+        return make_response(render_template("auth_required.html"), 401)
     except AO3.utils.InvalidIdError:
-        return make_response("No series found", 404)
+        return make_response(render_template("no_series.html"), 404)
     feed, entries = series_base_feed(series, exclude_explicit)
 
     feed.id(series.url)
@@ -112,9 +113,9 @@ def series_rss(series_id: int, exclude_explicit=False):
     try:
         series = AO3.Series(series_id)
     except AO3.utils.AuthError:
-        return make_response("Requires authentication", 401)
+        return make_response(render_template("auth_required.html"), 401)
     except AO3.utils.InvalidIdError:
-        return make_response("No series found", 404)
+        return make_response(render_template("no_series.html"), 404)
     feed, entries = series_base_feed(series, exclude_explicit)
 
     feed.author({'name': series.creators[0].username, 'email': 'do-not-reply@archiveofourown.org'})
