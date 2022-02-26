@@ -36,6 +36,8 @@ def work_atom(work_id: int):
         return make_response(("Requires authentication", 401))
     except AO3.utils.InvalidIdError:
         return make_response(("No work found", 404))
+    if config.block_explicit_works and work.rating == 'Explicit':
+        return make_response(('Explicit works are blocked'), 403)
     feed, entries = work_base_feed(work)
 
     feed.id(work.url)
@@ -52,6 +54,8 @@ def work_rss(work_id: int):
         return make_response(("Requires authentication", 401))
     except AO3.utils.InvalidIdError:
         return make_response(("No work found", 404))
+    if config.block_explicit_works and work.rating == 'Explicit':
+        return make_response(('Explicit works are blocked'), 403)
     feed, entries = work_base_feed(work)
 
     feed.author({'name': work.authors[0].username, 'email': 'do-not-reply@archiveofourown.org'})
@@ -70,7 +74,7 @@ def series_base_feed(series: AO3.Series, exclude_explicit=False):
     num_of_entries = config.number_of_works_in_feed
     work: AO3.Work
     for work in series.work_list[-num_of_entries:]:
-        if exclude_explicit and work.rating == 'Explicit':
+        if config.block_explicit_works or (exclude_explicit and work.rating == 'Explicit'):
             # Note that less works will be in the feed than what is set in the config if this occurs
             continue
         entry: FeedEntry = feed.add_entry()

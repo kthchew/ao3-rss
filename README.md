@@ -61,7 +61,8 @@ FLASK_APP=ao3_rss.server flask run
 
 You can use environment variables to configure how `ao3-rss` makes feeds.
 
-| Variable                    | Default | Value                     | Description                                                                                |
-| --------------------------- | ------- | ------------------------- | ------------------------------------------------------------------------------------------ |
-| `AO3_CHAPTERS_IN_WORK_FEED` | `3`     | Integer between 1 and 100 | The maximum number of chapters that should appear in a feed for a work (`GET /works/<id>`) |
-| `AO3_WORKS_IN_SERIES_FEED`  | `3`     | Integer between 1 and 100 | The maximum number of works that should appear in a feed for a series (`GET /series/<id>`) |
+| Variable                    | Default | Value                     | Description                                                                                              |
+| --------------------------- | ------- | ------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `AO3_CHAPTERS_IN_WORK_FEED` | `3`     | Integer between 1 and 100 | The maximum number of chapters that should appear in a feed for a work (`GET /works/<id>`)               |
+| `AO3_WORKS_IN_SERIES_FEED`  | `3`     | Integer between 1 and 100 | The maximum number of works that should appear in a feed for a series (`GET /series/<id>`)               |
+| `AO3_BLOCK_EXPLICIT`        | `False` | Boolean                   | Enforce `?exclude_explicit=true` for all series feeds, and do not generate work feeds for explicit works |
