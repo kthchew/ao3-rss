@@ -4,6 +4,10 @@ on:
   push:
     branches:
       - dev
+    paths:
+      - ao3_rss/**
+      - Dockerfile
+      - requirements.txt
 
 jobs:
   build-and-push-edge-image:

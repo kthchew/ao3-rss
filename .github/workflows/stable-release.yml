@@ -6,7 +6,7 @@ on:
       - v*
 
 jobs:
-  build-and-push-edge-image:
+  build-and-push-stable-image:
     runs-on: ubuntu-latest
     permissions:
       contents: read
