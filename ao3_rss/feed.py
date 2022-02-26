@@ -8,7 +8,7 @@ from flask import render_template
 
 def work_base_feed(work: AO3.Work):
     feed = FeedGenerator()
-    feed.title(work.title.replace('\uFF0C', ',')) # \uFF0C is a full-width comma
+    feed.title(work.title)
     feed.link(href=work.url, rel='alternate')
     feed.subtitle(work.summary if work.summary != "" else "(No summary available.)")
 
@@ -84,7 +84,7 @@ def series_base_feed(series: AO3.Series, exclude_explicit=False):
             continue
         entry: FeedEntry = feed.add_entry()
         entry.id(work.url)
-        entry.title(work.title.replace('\uFF0C', ','))
+        entry.title(work.title)
         entry.link(href=work.url)
         entry.content(work.summary if work.summary != "" else "(No summary available.)")
         work.reload(load_chapters=False)
