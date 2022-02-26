@@ -5,7 +5,7 @@ from feedgen.feed import FeedEntry
 from flask import make_response
 
 
-def work_base_feed(work):
+def work_base_feed(work: AO3.Work):
     feed = FeedGenerator()
     feed.title(work.title.replace('\uFF0C', ',')) # \uFF0C is a full-width comma
     feed.link(href=work.url, rel='alternate')
@@ -29,7 +29,7 @@ def work_base_feed(work):
 
     return feed, entries
 
-def work_atom(work_id):
+def work_atom(work_id: int):
     try:
         work = AO3.Work(work_id)
     except AO3.utils.AuthError:
@@ -45,7 +45,7 @@ def work_atom(work_id):
 
     return feed.atom_str()
 
-def work_rss(work_id):
+def work_rss(work_id: int):
     try:
         work = AO3.Work(work_id)
     except AO3.utils.AuthError:
@@ -60,7 +60,7 @@ def work_rss(work_id):
 
     return feed.rss_str()
 
-def series_base_feed(series):
+def series_base_feed(series: AO3.Series, exclude_explicit=False):
     feed = FeedGenerator()
     feed.title(series.name)
     feed.link(href=series.url, rel='alternate')
@@ -70,6 +70,9 @@ def series_base_feed(series):
     num_of_entries = config.number_of_works_in_feed
     work: AO3.Work
     for work in series.work_list[-num_of_entries:]:
+        if exclude_explicit and work.rating == 'Explicit':
+            # Note that less works will be in the feed than what is set in the config if this occurs
+            continue
         entry: FeedEntry = feed.add_entry()
         entry.id(work.url)
         entry.title(work.title.replace('\uFF0C', ','))
@@ -83,14 +86,14 @@ def series_base_feed(series):
 
     return feed, entries
 
-def series_atom(series_id):
+def series_atom(series_id: int, exclude_explicit=False):
     try:
         series = AO3.Series(series_id)
     except AO3.utils.AuthError:
         return make_response(("Requires authentication", 401))
     except AO3.utils.InvalidIdError:
         return make_response(("No series found", 404))
-    feed, entries = series_base_feed(series)
+    feed, entries = series_base_feed(series, exclude_explicit)
 
     feed.id(series.url)
     feed.author({'name': series.creators[0].username})
@@ -101,14 +104,14 @@ def series_atom(series_id):
 
     return feed.atom_str()
 
-def series_rss(series_id):
+def series_rss(series_id: int, exclude_explicit=False):
     try:
         series = AO3.Series(series_id)
     except AO3.utils.AuthError:
         return make_response(("Requires authentication", 401))
     except AO3.utils.InvalidIdError:
         return make_response(("No series found", 404))
-    feed, entries = series_base_feed(series)
+    feed, entries = series_base_feed(series, exclude_explicit)
 
     feed.author({'name': series.creators[0].username, 'email': 'do-not-reply@archiveofourown.org'})
     for entry in entries:
