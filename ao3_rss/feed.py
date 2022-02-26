@@ -7,7 +7,7 @@ from flask import make_response
 
 def work_base_feed(work):
     feed = FeedGenerator()
-    feed.title(work.title)
+    feed.title(work.title.replace('\uFF0C', ',')) # \uFF0C is a full-width comma
     feed.link(href=work.url, rel='alternate')
     feed.subtitle(work.summary if work.summary != "" else "(No summary available.)")
 
@@ -72,7 +72,7 @@ def series_base_feed(series):
     for work in series.work_list[-num_of_entries:]:
         entry: FeedEntry = feed.add_entry()
         entry.id(work.url)
-        entry.title(work.title)
+        entry.title(work.title.replace('\uFF0C', ','))
         entry.link(href=work.url)
         entry.content(work.summary if work.summary != "" else "(No summary available.)")
         work.reload(load_chapters=False)
