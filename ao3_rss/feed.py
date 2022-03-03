@@ -1,3 +1,4 @@
+from distutils.log import error
 import AO3
 import ao3_rss.config as config
 from feedgen.feed import FeedGenerator
@@ -41,6 +42,9 @@ def work_atom(work_id: int):
         return make_response(render_template("auth_required.html"), 401)
     except AO3.utils.InvalidIdError:
         return make_response(render_template("no_work.html"), 404)
+    except AttributeError as e:
+        error("Unknown error occurred while loading work " + str(work_id) + ": " + str(e))
+        return make_response(render_template("unknown_error.html"), 500)
     if config.block_explicit_works and work.rating == 'Explicit':
         return make_response(render_template("explicit_block.html"), 403)
     feed, entries = work_base_feed(work)
@@ -59,6 +63,9 @@ def work_rss(work_id: int):
         return make_response(render_template("auth_required.html"), 401)
     except AO3.utils.InvalidIdError:
         return make_response(render_template("no_work.html"), 404)
+    except AttributeError as e:
+        error("Unknown error occurred while loading work " + str(work_id) + ": " + str(e))
+        return make_response(render_template("unknown_error.html"), 500)
     if config.block_explicit_works and work.rating == 'Explicit':
         return make_response(render_template("explicit_block.html"), 403)
     feed, entries = work_base_feed(work)
@@ -102,6 +109,9 @@ def series_atom(series_id: int, exclude_explicit=False):
         return make_response(render_template("auth_required.html"), 401)
     except AO3.utils.InvalidIdError:
         return make_response(render_template("no_series.html"), 404)
+    except AttributeError as e:
+        error("Unknown error occurred while loading series " + str(series_id) + ": " + str(e))
+        return make_response(render_template("unknown_error.html"), 500)
     feed, entries = series_base_feed(series, exclude_explicit)
 
     feed.id(series.url)
@@ -120,6 +130,9 @@ def series_rss(series_id: int, exclude_explicit=False):
         return make_response(render_template("auth_required.html"), 401)
     except AO3.utils.InvalidIdError:
         return make_response(render_template("no_series.html"), 404)
+    except AttributeError as e:
+        error("Unknown error occurred while loading series " + str(series_id) + ": " + str(e))
+        return make_response(render_template("unknown_error.html"), 500)
     feed, entries = series_base_feed(series, exclude_explicit)
 
     feed.author({'name': series.creators[0].username, 'email': 'do-not-reply@archiveofourown.org'})
