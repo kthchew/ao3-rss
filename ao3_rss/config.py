@@ -2,8 +2,8 @@ import logging
 from os import environ
 
 def reload_config():
-    number_of_chapters_in_feed = __get_int_for_option('AO3_CHAPTERS_IN_WORK_FEED', 1, 100, 3)
-    number_of_works_in_feed = __get_int_for_option('AO3_WORKS_IN_SERIES_FEED', 1, 100, 3)
+    number_of_chapters_in_feed = __get_int_for_option('AO3_CHAPTERS_IN_WORK_FEED', 1, 100, 25)
+    number_of_works_in_feed = __get_int_for_option('AO3_WORKS_IN_SERIES_FEED', 1, 100, 1)
     block_explicit_works = __get_bool_for_option('AO3_BLOCK_EXPLICIT', False)
 
 def __get_int_for_option(environment_var: str, min: int, max: int, default: int):
@@ -27,6 +27,6 @@ def __get_bool_for_option(environment_var: str, default: bool):
     
     return option.lower() == 'true'
 
-number_of_chapters_in_feed = __get_int_for_option('AO3_CHAPTERS_IN_WORK_FEED', 1, 100, 3)
-number_of_works_in_feed = __get_int_for_option('AO3_WORKS_IN_SERIES_FEED', 1, 100, 3)
+number_of_chapters_in_feed = __get_int_for_option('AO3_CHAPTERS_IN_WORK_FEED', 1, 100, 25)
+number_of_works_in_feed = __get_int_for_option('AO3_WORKS_IN_SERIES_FEED', 1, 100, 1)
 block_explicit_works = __get_bool_for_option('AO3_BLOCK_EXPLICIT', False)
