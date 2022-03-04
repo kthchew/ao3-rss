@@ -11,9 +11,7 @@ def __get_int_for_option(environment_var: str, min_value: int, max_value: int, d
         option = int(option)
         if option > max_value:
             option = max_value
-            logging.warning(
-                'Value greater than %d given for %s. Setting to %d.', max_value, environment_var, max_value
-            )
+            logging.warning('Value greater than %d given for %s. Setting to %d.', max_value, environment_var, max_value)
         elif option < min_value:
             raise ValueError
     except ValueError:
