@@ -1,3 +1,4 @@
+import datetime
 from distutils.log import error
 import AO3
 import ao3_rss.config as config
@@ -21,6 +22,14 @@ def work_base_feed(work: AO3.Work):
         entry.id(f"{work.url}/chapters/{chapter.id}")
         entry.title(f"{chapter.number}. {chapter.title}")
         entry.link(href=f"{work.url}/chapters/{chapter.id}")
+        if chapter.number == work.nchapters:
+            entry.published(str(work.date_updated) + '+00:00')
+        elif chapter.number == 1 or work.date_updated == work.date_published:
+            entry.published(str(work.date_published) + '+00:00')
+        else:
+            # This isn't true, but it makes sure that these entries appear in the correct order when sorted by date
+            # ao3-api currently does not have an easy way to check when a chapter was published
+            entry.published(str(work.date_published + datetime.timedelta(seconds=chapter.number)) + '+00:00')
         formatted_text = ""
         for id, text in enumerate([chapter.summary, chapter.start_notes, chapter.text, chapter.end_notes]):
             if text != "":
