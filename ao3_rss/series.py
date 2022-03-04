@@ -1,3 +1,6 @@
+"""
+Provides methods useful for creating feeds for AO3 series.
+"""
 from distutils.log import error
 
 import AO3
@@ -5,7 +8,7 @@ from feedgen.entry import FeedEntry
 from feedgen.feed import FeedGenerator
 from flask import make_response, render_template
 
-from ao3_rss import config as config
+from ao3_rss import config
 
 
 def __base(series: AO3.Series, exclude_explicit=False):
@@ -15,10 +18,10 @@ def __base(series: AO3.Series, exclude_explicit=False):
     feed.subtitle(series.description if series.description != "" else "(No description available.)")
 
     entries = []
-    num_of_entries = config.number_of_works_in_feed
+    num_of_entries = config.NUMBER_OF_WORKS_IN_FEED
     work: AO3.Work
     for work in series.work_list[-num_of_entries:]:
-        if config.block_explicit_works or (exclude_explicit and work.rating == 'Explicit'):
+        if config.BLOCK_EXPLICIT_WORKS or (exclude_explicit and work.rating == 'Explicit'):
             # Note that fewer works will be in the feed than what is set in the config if this occurs
             continue
         entry: FeedEntry = feed.add_entry()
@@ -43,12 +46,13 @@ def __load(series_id: int):
         return None, make_response(render_template("auth_required.html"), 401)
     except AO3.utils.InvalidIdError:
         return None, make_response(render_template("no_series.html"), 404)
-    except AttributeError as e:
-        error("Unknown error occurred while loading series " + str(series_id) + ": " + str(e))
+    except AttributeError as err:
+        error("Unknown error occurred while loading series " + str(series_id) + ": " + str(err))
         return None, make_response(render_template("unknown_error.html"), 500)
 
 
 def atom(series_id: int, exclude_explicit=False):
+    """Returns an Atom feed for the series with the given id."""
     series, err = __load(series_id)
     if err is not None:
         return err
@@ -65,6 +69,7 @@ def atom(series_id: int, exclude_explicit=False):
 
 
 def rss(series_id: int, exclude_explicit=False):
+    """Returns an RSS feed for the work with the given id."""
     series, err = __load(series_id)
     if err is not None:
         return err

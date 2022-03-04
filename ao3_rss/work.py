@@ -1,3 +1,6 @@
+"""
+Provides methods useful for creating feeds for AO3 works.
+"""
 import datetime
 from distutils.log import error
 
@@ -6,7 +9,7 @@ from feedgen.entry import FeedEntry
 from feedgen.feed import FeedGenerator
 from flask import make_response, render_template
 
-from ao3_rss import config as config
+from ao3_rss import config
 
 
 def __base(work: AO3.Work):
@@ -16,7 +19,7 @@ def __base(work: AO3.Work):
     feed.subtitle(work.summary if work.summary != "" else "(No summary available.)")
 
     entries = []
-    num_of_entries = config.number_of_chapters_in_feed
+    num_of_entries = config.NUMBER_OF_CHAPTERS_IN_FEED
     chapter: AO3.Chapter
     for chapter in work.chapters[-num_of_entries:]:
         entry: FeedEntry = feed.add_entry()
@@ -36,7 +39,7 @@ def __base(work: AO3.Work):
             if text != "":
                 if i == 0:  # is summary
                     formatted_text += '<b>Summary: </b>'
-                elif i == 1 or i == 3:
+                elif i in (1, 3):
                     formatted_text += '<b>Notes: </b>'
                 current_text = text.strip().replace('\n\n', '\n')  # remove unnecessary newlines
                 formatted_text += current_text + '<hr>'
@@ -55,16 +58,16 @@ def __load(work_id: int):
         return None, make_response(render_template("auth_required.html"), 401)
     except AO3.utils.InvalidIdError:
         return None, make_response(render_template("no_work.html"), 404)
-    except AttributeError as e:
-        error("Unknown error occurred while loading work " + str(work_id) + ": " + str(e))
+    except AttributeError as err:
+        error("Unknown error occurred while loading work " + str(work_id) + ": " + str(err))
         return None, make_response(render_template("unknown_error.html"), 500)
-    if config.block_explicit_works and work.rating == 'Explicit':
+    if config.BLOCK_EXPLICIT_WORKS and work.rating == 'Explicit':
         return None, make_response(render_template("explicit_block.html"), 403)
-    else:
-        return work, None
+    return work, None
 
 
 def atom(work_id: int):
+    """Returns an Atom feed for the work with the given id."""
     work, err = __load(work_id)
     if err is not None:
         return err
@@ -79,6 +82,7 @@ def atom(work_id: int):
 
 
 def rss(work_id: int):
+    """Returns an RSS feed for the work with the given id."""
     work, err = __load(work_id)
     if err is not None:
         return err
