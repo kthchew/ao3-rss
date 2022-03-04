@@ -24,11 +24,15 @@ def work_base_feed(work: AO3.Work):
         formatted_text = ""
         for id, text in enumerate([chapter.summary, chapter.start_notes, chapter.text, chapter.end_notes]):
             if text != "":
+                current_text = text # remove unnecessary newlines
                 if id == 0: # is summary
                     formatted_text += '<b>Summary: </b>'
+                    current_text = current_text.replace('\n', '')
                 elif id == 1 or id == 3:
                     formatted_text += '<b>Notes: </b>'
-                formatted_text += text + '<hr>'
+                    current_text = current_text.replace('\n', '')
+                current_text = current_text.replace('\n\n', '\n')
+                formatted_text += current_text + '<hr>'
         # Remove last <hr>
         entry.content(formatted_text[:-4].replace('\n', '<br><br>'), type='html')
         entries.append(entry)
