@@ -1,8 +1,10 @@
 """
 A Flask app for serving RSS and Atom feeds for resources from Archive of Our Own (AO3).
 """
+from cachetools import cached, TTLCache
 from flask import Flask, make_response, request, escape, render_template
 
+from ao3_rss import config
 import ao3_rss.series
 import ao3_rss.work
 
@@ -11,6 +13,7 @@ app = Flask(__name__)
 
 @app.route('/works/<work_id>')
 @app.route('/works/<work_id>/atom')
+@cached(cache=TTLCache(maxsize=config.WORK_CACHE_SIZE, ttl=config.WORK_CACHE_TTL))
 def work_atom(work_id):
     """Returns a response for a request for an Atom work feed."""
     try:
@@ -24,6 +27,7 @@ def work_atom(work_id):
 
 
 @app.route('/works/<work_id>/rss')
+@cached(cache=TTLCache(maxsize=config.WORK_CACHE_SIZE, ttl=config.WORK_CACHE_TTL))
 def work_rss(work_id):
     """Returns a response for a request for an RSS work feed."""
     try:
@@ -38,6 +42,7 @@ def work_rss(work_id):
 
 @app.route('/series/<series_id>')
 @app.route('/series/<series_id>/atom')
+@cached(cache=TTLCache(maxsize=config.SERIES_CACHE_SIZE, ttl=config.SERIES_CACHE_TTL))
 def series_atom(series_id):
     """Returns a response for a request for an Atom series feed."""
     try:
@@ -52,6 +57,7 @@ def series_atom(series_id):
 
 
 @app.route('/series/<series_id>/rss')
+@cached(cache=TTLCache(maxsize=config.SERIES_CACHE_SIZE, ttl=config.SERIES_CACHE_TTL))
 def series_rss(series_id):
     """Returns a response for a request for an RSS series feed."""
     try:
