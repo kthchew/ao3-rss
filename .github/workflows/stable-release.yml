@@ -37,3 +37,5 @@ jobs:
           tags: |
             ghcr.io/${{ github.repository_owner }}/ao3-rss:${{ steps.get_version.outputs.VERSION }}
             ghcr.io/${{ github.repository_owner }}/ao3-rss:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
