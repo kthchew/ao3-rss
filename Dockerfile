@@ -1,4 +1,4 @@
-FROM alpine:3.15
+FROM python:3.10.4-alpine
 
 ENV ADDRESS=0.0.0.0
 ENV PORT=8000
@@ -8,8 +8,7 @@ COPY ./requirements.txt /app/
 
 WORKDIR /app
 
-RUN apk add --no-cache py-pip py3-lxml py3-gunicorn \
-    && pip install --no-cache-dir -r requirements.txt \
+RUN pip install --no-cache-dir -r requirements.txt \
     && adduser -D -u 307 app
 
 COPY ./ao3_rss /app/ao3_rss
