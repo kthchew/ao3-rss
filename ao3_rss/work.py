@@ -2,7 +2,7 @@
 Provides methods useful for creating feeds for AO3 works.
 """
 import datetime
-from distutils.log import error
+import logging
 
 import AO3
 from feedgen.entry import FeedEntry
@@ -60,7 +60,7 @@ def __load(work_id: int):
     except AO3.utils.InvalidIdError:
         return None, make_response(render_template("no_work.html"), 404)
     except AttributeError as err:
-        error("Unknown error occurred while loading work " + str(work_id) + ": " + str(err))
+        logging.error("Unknown error occurred while loading work %d: %s", work_id, err)
         return None, make_response(render_template("unknown_error.html"), 500)
     if config.BLOCK_EXPLICIT_WORKS and work.rating == 'Explicit':
         return None, make_response(render_template("explicit_block.html"), 403)

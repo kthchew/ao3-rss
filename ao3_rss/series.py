@@ -1,7 +1,7 @@
 """
 Provides methods useful for creating feeds for AO3 series.
 """
-from distutils.log import error
+import logging
 
 import AO3
 from feedgen.entry import FeedEntry
@@ -47,7 +47,7 @@ def __load(series_id: int):
     except AO3.utils.InvalidIdError:
         return None, make_response(render_template("no_series.html"), 404)
     except AttributeError as err:
-        error("Unknown error occurred while loading series " + str(series_id) + ": " + str(err))
+        logging.error("Unknown error occurred while loading series %d: %s", series_id, err)
         return None, make_response(render_template("unknown_error.html"), 500)
 
 
