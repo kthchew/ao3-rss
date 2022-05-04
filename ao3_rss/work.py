@@ -24,7 +24,8 @@ def __base(work: AO3.Work):
     for chapter in work.chapters[-num_of_entries:]:
         entry: FeedEntry = feed.add_entry()
         entry.id(f"{work.url}/chapters/{chapter.id}")
-        entry.title(f"{chapter.number}. {chapter.title}")
+        title = chapter.title if chapter.title else f"Chapter {chapter.number}"
+        entry.title(f"{chapter.number}. {title}")
         entry.link(href=f"{work.url}/chapters/{chapter.id}")
         if chapter.number == work.nchapters:
             entry.published(str(work.date_updated) + '+00:00')
