@@ -34,7 +34,7 @@ def __base(work: AO3.Work):
         else:
             # This isn't true, but it makes sure that these entries appear in the correct order when sorted by date
             # ao3-api currently does not have an easy way to check when a chapter was published
-            entry.published(str(work.date_published + datetime.timedelta(seconds=chapter.number)) + '+00:00')
+            entry.published(str(work.date_published + datetime.timedelta(minutes=chapter.number)) + '+00:00')
         formatted_text = ""
         for i, text in enumerate([chapter.summary, chapter.start_notes, chapter.text, chapter.end_notes]):
             if text != "":
