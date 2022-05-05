@@ -1,4 +1,4 @@
 ao3-api~=2.2.1
 feedgen~=0.9.0
-Flask~=2.0.2
+Flask~=2.1.2
 cachetools~=5.0.0
