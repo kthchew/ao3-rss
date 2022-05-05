@@ -26,7 +26,7 @@ def __base(work: AO3.Work):
         entry.id(f"{work.url}/chapters/{chapter.id}")
         title = chapter.title if chapter.title else f"Chapter {chapter.number}"
         entry.title(f"{chapter.number}. {title}")
-        entry.link(href=f"{work.url}/chapters/{chapter.id}")
+        entry.link(href=chapter.url)
         if chapter.number == work.nchapters:
             entry.published(str(work.date_updated) + '+00:00')
         elif chapter.number == 1 or work.date_updated == work.date_published:
