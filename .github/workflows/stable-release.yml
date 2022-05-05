@@ -35,8 +35,8 @@ jobs:
           platforms: linux/amd64,linux/arm64
           file: ./Dockerfile
           tags: |
-            ghcr.io/${{ github.repository_owner }}/ao3-rss:${{ steps.get_version.outputs.VERSION }}
-            ghcr.io/${{ github.repository_owner }}/ao3-rss:latest
+            ghcr.io/${{ github.repository_owner }}/ao3-rss:${{ steps.get_version.outputs.VERSION }}-alpine
+            ghcr.io/${{ github.repository_owner }}/ao3-rss:latest-alpine
           cache-from: type=gha
           cache-to: type=gha,mode=max
       - name: Build container image (Alpine)

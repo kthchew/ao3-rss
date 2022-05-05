@@ -45,6 +45,6 @@ jobs:
           context: .
           platforms: linux/amd64
           file: ./Dockerfile-alpine
-          tags: ghcr.io/${{ github.repository_owner }}/ao3-rss:edge
+          tags: ghcr.io/${{ github.repository_owner }}/ao3-rss:edge-alpine
           cache-from: type=gha
           cache-to: type=gha,mode=max
