@@ -38,3 +38,13 @@ jobs:
           tags: ghcr.io/${{ github.repository_owner }}/ao3-rss:edge
           cache-from: type=gha
           cache-to: type=gha,mode=max
+      - name: Build container image (Alpine)
+        uses: docker/build-push-action@v2
+        with:
+          push: true
+          context: .
+          platforms: linux/amd64
+          file: ./Dockerfile-alpine
+          tags: ghcr.io/${{ github.repository_owner }}/ao3-rss:edge
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
