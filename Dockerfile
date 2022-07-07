@@ -1,4 +1,4 @@
-FROM alpine:3.15
+FROM alpine:3.16
 
 ENV ADDRESS=0.0.0.0
 ENV PORT=8000
