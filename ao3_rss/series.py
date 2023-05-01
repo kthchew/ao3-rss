@@ -58,12 +58,15 @@ def atom(series_id: int, exclude_explicit=False):
         return err
     feed, entries = __base(series, exclude_explicit)
 
+    series: AO3.Series
     feed.id(series.url)
-    feed.author({'name': series.creators[0].username})
+    creator_list = ', '.join(creator.username for creator in series.creators)
+    feed.author({'name': creator_list})
     for entry in entries:
         work_id = AO3.utils.workid_from_url(entry.id())
         work = AO3.Work(work_id, load=True, load_chapters=False)
-        entry.author({'name': work.authors[0].username})
+        author_list = ', '.join(author.username for author in work.authors)
+        entry.author({'name': author_list})
 
     return feed.atom_str()
 
@@ -75,10 +78,13 @@ def rss(series_id: int, exclude_explicit=False):
         return err
     feed, entries = __base(series, exclude_explicit)
 
-    feed.author({'name': series.creators[0].username, 'email': 'do-not-reply@archiveofourown.org'})
+    series: AO3.Series
+    creator_list = ', '.join(creator.username for creator in series.creators)
+    feed.author({'name': creator_list, 'email': 'do-not-reply@archiveofourown.org'})
     for entry in entries:
         work_id = AO3.utils.workid_from_url(entry.id())
         work = AO3.Work(work_id, load=True, load_chapters=False)
-        entry.author({'name': work.authors[0].username, 'email': 'do-not-reply@archiveofourown.org'})
+        author_list = ', '.join(author.username for author in work.authors)
+        entry.author({'name': author_list, 'email': 'do-not-reply@archiveofourown.org'})
 
     return feed.rss_str()
