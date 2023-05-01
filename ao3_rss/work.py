@@ -74,10 +74,12 @@ def atom(work_id: int):
         return err
     feed, entries = __base(work)
 
+    work: AO3.Work
     feed.id(work.url)
-    feed.author({'name': work.authors[0].username})
+    author_list = ', '.join(author.username for author in work.authors)
+    feed.author({'name': author_list})
     for entry in entries:
-        entry.author({'name': work.authors[0].username})
+        entry.author({'name': author_list})
 
     return feed.atom_str()
 
@@ -89,8 +91,10 @@ def rss(work_id: int):
         return err
     feed, entries = __base(work)
 
-    feed.author({'name': work.authors[0].username, 'email': 'do-not-reply@archiveofourown.org'})
+    work: AO3.Work
+    author_list = ', '.join(author.username for author in work.authors)
+    feed.author({'name': author_list, 'email': 'do-not-reply@archiveofourown.org'})
     for entry in entries:
-        entry.author({'name': work.authors[0].username, 'email': 'do-not-reply@archiveofourown.org'})
+        entry.author({'name': author_list, 'email': 'do-not-reply@archiveofourown.org'})
 
     return feed.rss_str()
