@@ -2,7 +2,8 @@
 A Flask app for serving RSS and Atom feeds for resources from Archive of Our Own (AO3).
 """
 from cachetools import cached, TTLCache
-from flask import Flask, make_response, request, escape, render_template
+from flask import Flask, make_response, request, render_template
+from markupsafe import escape
 
 from ao3_rss import config
 import ao3_rss.series
