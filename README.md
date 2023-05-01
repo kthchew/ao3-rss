@@ -50,12 +50,14 @@ FLASK_APP=ao3_rss.server flask run
 
 ## Usage
 
-| Request                                                  | Description                                         | Example                                        | Notes                                                                                      |
-|----------------------------------------------------------|-----------------------------------------------------|------------------------------------------------|--------------------------------------------------------------------------------------------|
-| `GET /works/<work_id>`<br>`GET /works/<work_id>/atom`    | Get an Atom feed of the latest chapters from a work | `http://127.0.0.1:8000/works/<work_id>`        |                                                                                            |
-| `GET /works/<work_id>/rss`                               | Get an RSS feed of the latest chapters from a work  | `http://127.0.0.1:8000/works/<work_id>/rss`    |                                                                                            |
-| `GET /series/<series_id>`<br>`GET /works/<work_id>/atom` | Get an Atom feed of the latest works from a series  | `http://127.0.0.1:8000/series/<series_id>`     | Add `?exclude_explicit=true` at the end of the URL to exclude explicit works from the feed |
-| `GET /series/<series_id>/rss`                            | Get an RSS feed of the latest works from a series   | `http://127.0.0.1:8000/series/<series_id>/rss` | Add `?exclude_explicit=true` at the end of the URL to exclude explicit works from the feed |
+| Request                       | Description                                                                               | Example                                         | Notes                                                                                      |
+|-------------------------------|-------------------------------------------------------------------------------------------|-------------------------------------------------|--------------------------------------------------------------------------------------------|
+| `GET /works/<work_id>`        | Get a feed of the latest chapters from a work (type of feed based on the `Accept` header) | `http://127.0.0.1:8000/works/<work_id>`         |                                                                                            |
+| `GET /works/<work_id>/atom`   | Get an Atom feed of the latest chapters from a work                                       | `http://127.0.0.1:8000/works/<work_id>/atom`    |                                                                                            |
+| `GET /works/<work_id>/rss`    | Get an RSS feed of the latest chapters from a work                                        | `http://127.0.0.1:8000/works/<work_id>/rss`     |                                                                                            |
+| `GET /series/<series_id>`     | Get a feed of the latest works from a series (type of feed based on the `Accept` header)  | `http://127.0.0.1:8000/series/<series_id>`      | Add `?exclude_explicit=true` at the end of the URL to exclude explicit works from the feed |
+| `GET /works/<work_id>/atom`   | Get an Atom feed of the latest works from a series                                        | `http://127.0.0.1:8000/series/<series_id>/atom` | Add `?exclude_explicit=true` at the end of the URL to exclude explicit works from the feed |
+| `GET /series/<series_id>/rss` | Get an RSS feed of the latest works from a series                                         | `http://127.0.0.1:8000/series/<series_id>/rss`  | Add `?exclude_explicit=true` at the end of the URL to exclude explicit works from the feed |
 
 ## Configuration
 
