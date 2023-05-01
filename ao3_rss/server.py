@@ -2,7 +2,7 @@
 A Flask app for serving RSS and Atom feeds for resources from Archive of Our Own (AO3).
 """
 from cachetools import cached, TTLCache
-from flask import Flask, make_response, request, render_template
+from flask import Flask, make_response, request, render_template, redirect, url_for, abort
 from markupsafe import escape
 
 from ao3_rss import config
@@ -23,6 +23,14 @@ def work_feed(work_id):
             return work_rss(work_id)
         case _:
             return work_atom(work_id)
+
+
+@app.route('/works/<work_id>/<path:path>')
+def work_with_chapter_redirect(work_id, path: str):
+    """Strips /chapters/<chapter_id> from a work request."""
+    if path.startswith('chapters/'):
+        return redirect(url_for('work_feed', work_id=work_id), code=301)
+    return abort(404)
 
 
 @app.route('/works/<work_id>/atom')
