@@ -13,6 +13,18 @@ app = Flask(__name__)
 
 
 @app.route('/works/<work_id>')
+def work_feed(work_id):
+    """Returns a response for a request for a work feed."""
+    accept_header = request.accept_mimetypes.best_match(['application/atom+xml', 'application/rss+xml', '*/*'])
+    match accept_header:
+        case 'application/atom+xml':
+            return work_atom(work_id)
+        case 'application/rss+xml':
+            return work_rss(work_id)
+        case _:
+            return work_atom(work_id)
+
+
 @app.route('/works/<work_id>/atom')
 @cached(cache=TTLCache(maxsize=config.WORK_CACHE_SIZE, ttl=config.WORK_CACHE_TTL))
 def work_atom(work_id):
@@ -42,6 +54,18 @@ def work_rss(work_id):
 
 
 @app.route('/series/<series_id>')
+def series(series_id):
+    """Returns a response for a request for a series feed."""
+    accept_header = request.accept_mimetypes.best_match(['application/atom+xml', 'application/rss+xml', '*/*'])
+    match accept_header:
+        case 'application/atom+xml':
+            return series_atom(series_id)
+        case 'application/rss+xml':
+            return series_rss(series_id)
+        case _:
+            return series_atom(series_id)
+
+
 @app.route('/series/<series_id>/atom')
 @cached(cache=TTLCache(maxsize=config.SERIES_CACHE_SIZE, ttl=config.SERIES_CACHE_TTL))
 def series_atom(series_id):
