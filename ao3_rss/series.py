@@ -8,7 +8,7 @@ from feedgen.entry import FeedEntry
 from feedgen.feed import FeedGenerator
 from flask import make_response, render_template
 
-from ao3_rss import config
+from ao3_rss import config, session
 
 
 def __base(series: AO3.Series, exclude_explicit=False):
@@ -41,7 +41,7 @@ def __base(series: AO3.Series, exclude_explicit=False):
 def __load(series_id: int):
     """Returns the AO3 series with the given `series_id`, or a Response with an error if it was unsuccessful."""
     try:
-        return AO3.Series(series_id), None
+        return AO3.Series(series_id, session.get_session()), None
     except AO3.utils.AuthError:
         return None, make_response(render_template("auth_required.html"), 401)
     except AO3.utils.InvalidIdError:
@@ -64,7 +64,7 @@ def atom(series_id: int, exclude_explicit=False):
     feed.author({'name': creator_list})
     for entry in entries:
         work_id = AO3.utils.workid_from_url(entry.id())
-        work = AO3.Work(work_id, load=True, load_chapters=False)
+        work = AO3.Work(work_id, session=session.get_session(), load=True, load_chapters=False)
         author_list = ', '.join(author.username for author in work.authors)
         entry.author({'name': author_list})
 
@@ -83,7 +83,7 @@ def rss(series_id: int, exclude_explicit=False):
     feed.author({'name': creator_list, 'email': 'do-not-reply@archiveofourown.org'})
     for entry in entries:
         work_id = AO3.utils.workid_from_url(entry.id())
-        work = AO3.Work(work_id, load=True, load_chapters=False)
+        work = AO3.Work(work_id, session=session.get_session(), load=True, load_chapters=False)
         author_list = ', '.join(author.username for author in work.authors)
         entry.author({'name': author_list, 'email': 'do-not-reply@archiveofourown.org'})
 

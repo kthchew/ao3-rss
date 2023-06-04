@@ -9,7 +9,7 @@ from feedgen.entry import FeedEntry
 from feedgen.feed import FeedGenerator
 from flask import make_response, render_template
 
-from ao3_rss import config
+from ao3_rss import config, session
 
 
 def __base(work: AO3.Work):
@@ -54,7 +54,7 @@ def __base(work: AO3.Work):
 def __load(work_id: int):
     """Returns the AO3 work with the given `work_id`, or a Response with an error if it was unsuccessful."""
     try:
-        work = AO3.Work(work_id)
+        work = AO3.Work(work_id, session.get_session())
     except AO3.utils.AuthError:
         return None, make_response(render_template("auth_required.html"), 401)
     except AO3.utils.InvalidIdError:
