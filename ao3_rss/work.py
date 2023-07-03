@@ -11,6 +11,8 @@ from flask import make_response, render_template
 
 from ao3_rss import config, session
 
+_works_requiring_auth = []
+
 
 def __base(work: AO3.Work):
     feed = FeedGenerator()
@@ -51,20 +53,37 @@ def __base(work: AO3.Work):
     return feed, entries
 
 
-def __load(work_id: int):
+def __load(work_id: int, use_session: bool = False):
     """Returns the AO3 work with the given `work_id`, or a Response with an error if it was unsuccessful."""
-    try:
-        work = AO3.Work(work_id, session.get_session())
-    except AO3.utils.AuthError:
+    if use_session is False and work_id in _works_requiring_auth:
+        return __load(work_id, True)
+    sess = session.get_session() if use_session else AO3.GuestSession()
+    if sess is None:
         return None, make_response(render_template("auth_required.html"), 401)
+    try:
+        work = AO3.Work(work_id, sess)
+        return work, None
+    except AO3.utils.AuthError:
+        if use_session is False:
+            work, err = __load(work_id, True)
+            if err is None:
+                _works_requiring_auth.append(work_id)
+        else:
+            work, err = None, make_response(render_template("auth_required.html"), 401)
     except AO3.utils.InvalidIdError:
-        return None, make_response(render_template("no_work.html"), 404)
-    except AttributeError as err:
-        logging.error("Unknown error occurred while loading work %d: %s", work_id, err)
-        return None, make_response(render_template("unknown_error.html"), 500)
+        work, err = None, make_response(render_template("no_work.html"), 404)
+    except AttributeError as error:
+        # Generally this is because the work is not publicly available (auth required)
+        if use_session is False:
+            work, err = __load(work_id, True)
+            if err is None:
+                _works_requiring_auth.append(work_id)
+        else:
+            logging.error("Unknown error occurred while loading work %d: %s", work_id, error)
+            work, err = None, make_response(render_template("unknown_error.html"), 500)
     if config.BLOCK_EXPLICIT_WORKS and work.rating == 'Explicit':
-        return None, make_response(render_template("explicit_block.html"), 403)
-    return work, None
+        work, err = None, make_response(render_template("explicit_block.html"), 403)
+    return work, err
 
 
 def atom(work_id: int):

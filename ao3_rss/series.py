@@ -10,6 +10,8 @@ from flask import make_response, render_template
 
 from ao3_rss import config, session
 
+_series_requiring_auth = []
+
 
 def __base(series: AO3.Series, exclude_explicit=False):
     feed = FeedGenerator()
@@ -29,6 +31,8 @@ def __base(series: AO3.Series, exclude_explicit=False):
         entry.title(work.title)
         entry.link(href=work.url)
         entry.content(work.summary if work.summary != "" else "(No summary available.)")
+        if series.id in _series_requiring_auth:
+            work.set_session(session.get_session())
         work.reload(load_chapters=False)
         # Assume UTC
         entry.published(str(work.date_published) + '+00:00')
@@ -38,17 +42,36 @@ def __base(series: AO3.Series, exclude_explicit=False):
     return feed, entries
 
 
-def __load(series_id: int):
+def __load(series_id: int, use_session: bool = False):
     """Returns the AO3 series with the given `series_id`, or a Response with an error if it was unsuccessful."""
-    try:
-        return AO3.Series(series_id, session.get_session()), None
-    except AO3.utils.AuthError:
+    if use_session is False and series_id in _series_requiring_auth:
+        return __load(series_id, True)
+    sess = session.get_session() if use_session else AO3.GuestSession()
+    if sess is None:
         return None, make_response(render_template("auth_required.html"), 401)
+    try:
+        series = AO3.Series(series_id, sess)
+        _ = series.name  # trigger an error if the series was not loaded properly (e.g. auth required)
+        return series, None
+    except AO3.utils.AuthError:
+        if use_session is False:
+            series, err = __load(series_id, True)
+            if err is None:
+                _series_requiring_auth.append(series_id)
+        else:
+            series, err = None, make_response(render_template("auth_required.html"), 401)
     except AO3.utils.InvalidIdError:
-        return None, make_response(render_template("no_series.html"), 404)
-    except AttributeError as err:
-        logging.error("Unknown error occurred while loading series %d: %s", series_id, err)
-        return None, make_response(render_template("unknown_error.html"), 500)
+        series, err = None, make_response(render_template("no_series.html"), 404)
+    except AttributeError as error:
+        # Generally this is because the work is not publicly available (auth required)
+        if use_session is False:
+            series, err = __load(series_id, True)
+            if err is None:
+                _series_requiring_auth.append(series_id)
+        else:
+            logging.error("Unknown error occurred while loading series %d: %s", series_id, error)
+            series, err = None, make_response(render_template("unknown_error.html"), 500)
+    return series, err
 
 
 def atom(series_id: int, exclude_explicit=False):
@@ -62,9 +85,10 @@ def atom(series_id: int, exclude_explicit=False):
     feed.id(series.url)
     creator_list = ', '.join(creator.username for creator in series.creators)
     feed.author({'name': creator_list})
+    sess = session.get_session() if series_id in _series_requiring_auth else AO3.GuestSession()
     for entry in entries:
         work_id = AO3.utils.workid_from_url(entry.id())
-        work = AO3.Work(work_id, session=session.get_session(), load=True, load_chapters=False)
+        work = AO3.Work(work_id, session=sess, load=True, load_chapters=False)
         author_list = ', '.join(author.username for author in work.authors)
         entry.author({'name': author_list})
 
@@ -81,9 +105,10 @@ def rss(series_id: int, exclude_explicit=False):
     series: AO3.Series
     creator_list = ', '.join(creator.username for creator in series.creators)
     feed.author({'name': creator_list, 'email': 'do-not-reply@archiveofourown.org'})
+    sess = session.get_session() if series_id in _series_requiring_auth else AO3.GuestSession()
     for entry in entries:
         work_id = AO3.utils.workid_from_url(entry.id())
-        work = AO3.Work(work_id, session=session.get_session(), load=True, load_chapters=False)
+        work = AO3.Work(work_id, session=sess, load=True, load_chapters=False)
         author_list = ', '.join(author.username for author in work.authors)
         entry.author({'name': author_list, 'email': 'do-not-reply@archiveofourown.org'})
 
