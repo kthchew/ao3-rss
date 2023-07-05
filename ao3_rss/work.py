@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2022 Kenneth Chew
+
 """
 Provides methods useful for creating feeds for AO3 works.
 """

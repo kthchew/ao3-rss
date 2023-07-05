@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2022 Kenneth Chew
+
 """
 A Flask app for serving RSS and Atom feeds for resources from Archive of Our Own (AO3).
 """

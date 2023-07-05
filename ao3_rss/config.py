@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2022 Kenneth Chew
+
 """
 Gets the configuration for the app.
 """
