@@ -12,9 +12,8 @@ import AO3
 import requests.exceptions
 from feedgen.entry import FeedEntry
 from feedgen.feed import FeedGenerator
-from flask import make_response, render_template
 
-from ao3_rss import config, session
+from ao3_rss import config, errors, session
 
 _works_requiring_auth = []
 
@@ -65,11 +64,11 @@ def __load_sync(work_id: int, use_session: bool = False):
         return __load_sync(work_id, True)
     sess = session.get_session() if use_session else AO3.GuestSession()
     if sess is None:
-        return None, make_response(render_template("auth_required.html"), 401)
+        return None, errors.AuthRequiredResponse
     try:
         work = AO3.Work(work_id, sess)
         if config.BLOCK_EXPLICIT_WORKS and work.rating == 'Explicit':
-            return None, make_response(render_template("explicit_block.html"), 403)
+            return None, errors.ExplicitContentResponse
         return work, None
     except AO3.utils.AuthError:
         if use_session is False:
@@ -77,9 +76,9 @@ def __load_sync(work_id: int, use_session: bool = False):
             if err is None:
                 _works_requiring_auth.append(work_id)
         else:
-            work, err = None, make_response(render_template("auth_required.html"), 401)
+            work, err = None, errors.AuthRequiredResponse
     except AO3.utils.InvalidIdError:
-        work, err = None, make_response(render_template("no_work.html"), 404)
+        work, err = None, errors.NoSuchWorkResponse
     except AttributeError as error:
         # Generally this is because the work is not publicly available (auth required)
         if use_session is False:
@@ -88,9 +87,9 @@ def __load_sync(work_id: int, use_session: bool = False):
                 _works_requiring_auth.append(work_id)
         else:
             logging.error("Unknown error occurred while loading work %d: %s", work_id, error)
-            work, err = None, make_response(render_template("unknown_error.html"), 500)
+            work, err = None, errors.UnknownErrorResponse
     except (requests.exceptions.ConnectionError, requests.exceptions.SSLError):
-        work, err = None, make_response(render_template("bad_gateway.html"), 502)
+        work, err = None, errors.BadGatewayResponse
     return work, err
 
 
@@ -114,7 +113,7 @@ def __load(work_id: int):
     loader.join(15)
     if loader.is_alive():
         loader.terminate()
-        return None, make_response(render_template("timeout.html"), 504)
+        return None, errors.TimeoutResponse
     ret = queue.get()
     return ret['work'], ret['err']
 
@@ -123,7 +122,7 @@ def atom(work_id: int):
     """Returns an Atom feed for the work with the given id."""
     work, err = __load(work_id)
     if err is not None:
-        return err
+        return err.make_response()
     feed, entries = __base(work)
 
     work: AO3.Work
@@ -140,7 +139,7 @@ def rss(work_id: int):
     """Returns an RSS feed for the work with the given id."""
     work, err = __load(work_id)
     if err is not None:
-        return err
+        return err.make_response()
     feed, entries = __base(work)
 
     work: AO3.Work

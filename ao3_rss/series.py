@@ -11,9 +11,8 @@ import AO3
 import requests.exceptions
 from feedgen.entry import FeedEntry
 from feedgen.feed import FeedGenerator
-from flask import make_response, render_template
 
-from ao3_rss import config, session
+from ao3_rss import config, session, errors
 
 _series_requiring_auth = []
 
@@ -54,7 +53,7 @@ def __load_sync(series_id: int, use_session: bool = False):
         return __load_sync(series_id, True)
     sess = session.get_session() if use_session else AO3.GuestSession()
     if sess is None:
-        return None, make_response(render_template("auth_required.html"), 401)
+        return None, errors.AuthRequiredResponse
     try:
         series = AO3.Series(series_id, sess)
         _ = series.name  # trigger an error if the series was not loaded properly (e.g. auth required)
@@ -65,9 +64,9 @@ def __load_sync(series_id: int, use_session: bool = False):
             if err is None:
                 _series_requiring_auth.append(series_id)
         else:
-            series, err = None, make_response(render_template("auth_required.html"), 401)
+            series, err = None, errors.AuthRequiredResponse
     except AO3.utils.InvalidIdError:
-        series, err = None, make_response(render_template("no_series.html"), 404)
+        series, err = None, errors.NoSuchSeriesResponse
     except AttributeError as error:
         # Generally this is because the work is not publicly available (auth required)
         if use_session is False:
@@ -76,9 +75,9 @@ def __load_sync(series_id: int, use_session: bool = False):
                 _series_requiring_auth.append(series_id)
         else:
             logging.error("Unknown error occurred while loading series %d: %s", series_id, error)
-            series, err = None, make_response(render_template("unknown_error.html"), 500)
+            series, err = None, errors.UnknownErrorResponse
     except (requests.exceptions.ConnectionError, requests.exceptions.SSLError):
-        series, err = None, make_response(render_template("bad_gateway.html"), 502)
+        series, err = None, errors.BadGatewayResponse
     return series, err
 
 
@@ -102,7 +101,7 @@ def __load(series_id: int):
     loader.join(15)
     if loader.is_alive():
         loader.terminate()
-        return None, make_response(render_template("timeout.html"), 504)
+        return None, errors.TimeoutResponse
     ret = queue.get()
     return ret['series'], ret['err']
 
@@ -111,7 +110,7 @@ def atom(series_id: int, exclude_explicit=False):
     """Returns an Atom feed for the series with the given id."""
     series, err = __load(series_id)
     if err is not None:
-        return err
+        return err.make_response()
     feed, entries = __base(series, exclude_explicit)
 
     series: AO3.Series
@@ -132,7 +131,7 @@ def rss(series_id: int, exclude_explicit=False):
     """Returns an RSS feed for the work with the given id."""
     series, err = __load(series_id)
     if err is not None:
-        return err
+        return err.make_response()
     feed, entries = __base(series, exclude_explicit)
 
     series: AO3.Series
