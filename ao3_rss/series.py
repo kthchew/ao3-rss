@@ -5,7 +5,7 @@
 Provides methods useful for creating feeds for AO3 series.
 """
 import logging
-from multiprocessing import Queue, Process
+import signal
 
 import AO3
 import requests.exceptions
@@ -15,6 +15,13 @@ from feedgen.feed import FeedGenerator
 from ao3_rss import config, session, errors
 
 _series_requiring_auth = []
+
+
+def __alarm_handler(signum, frame):
+    raise TimeoutError
+
+
+signal.signal(signal.SIGALRM, __alarm_handler)
 
 
 def __base(series: AO3.Series, exclude_explicit=False):
@@ -81,29 +88,15 @@ def __load_sync(series_id: int, use_session: bool = False):
     return series, err
 
 
-def __load_set(series_id: int, queue: Queue):
-    """Sets the queue values."""
-    ret = queue.get()
-    ret['series'], ret['err'] = __load_sync(series_id)
-    queue.put(ret)
-
-
 def __load(series_id: int):
-    """Returns the AO3 work with the given `work_id`, or a Response with an error if it was unsuccessful."""
-    ret = {
-        'series': None,
-        'err': None
-    }
-    queue = Queue()
-    queue.put(ret)
-    loader = Process(target=__load_set, args=(series_id, queue))
-    loader.start()
-    loader.join(15)
-    if loader.is_alive():
-        loader.terminate()
+    """Returns the AO3 series with the given `series_id`, or a Response with an error if it was unsuccessful."""
+    signal.alarm(15)
+    try:
+        series, err = __load_sync(series_id, False)
+    except TimeoutError:
         return None, errors.TimeoutResponse
-    ret = queue.get()
-    return ret['series'], ret['err']
+    signal.alarm(0)
+    return series, err
 
 
 def atom(series_id: int, exclude_explicit=False):

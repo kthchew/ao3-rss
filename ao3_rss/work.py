@@ -6,8 +6,8 @@ Provides methods useful for creating feeds for AO3 works.
 """
 import datetime
 import logging
+import signal
 
-from multiprocessing import Process, Queue
 import AO3
 import requests.exceptions
 from feedgen.entry import FeedEntry
@@ -17,6 +17,12 @@ from ao3_rss import config, errors, session
 
 _works_requiring_auth = []
 
+
+def __alarm_handler(signum, frame):
+    raise TimeoutError
+
+
+signal.signal(signal.SIGALRM, __alarm_handler)
 
 def __base(work: AO3.Work):
     feed = FeedGenerator()
@@ -92,30 +98,16 @@ def __load_sync(work_id: int, use_session: bool = False):
         work, err = None, errors.BadGatewayResponse
     return work, err
 
-
-def __load_set(work_id: int, queue: Queue):
-    """Sets the queue values."""
-    ret = queue.get()
-    ret['work'], ret['err'] = __load_sync(work_id)
-    queue.put(ret)
-
-
 def __load(work_id: int):
     """Returns the AO3 work with the given `work_id`, or a Response with an error if it was unsuccessful."""
-    ret = {
-        'work': None,
-        'err': None
-    }
-    queue = Queue()
-    queue.put(ret)
-    loader = Process(target=__load_set, args=(work_id, queue))
-    loader.start()
-    loader.join(15)
-    if loader.is_alive():
-        loader.terminate()
+    signal.alarm(15)
+    try:
+        work, err = __load_sync(work_id, False)
+    except TimeoutError:
         return None, errors.TimeoutResponse
-    ret = queue.get()
-    return ret['work'], ret['err']
+    else:
+        signal.alarm(0)
+        return work, err
 
 
 def atom(work_id: int):
