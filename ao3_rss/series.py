@@ -5,6 +5,7 @@
 Provides methods useful for creating feeds for AO3 series.
 """
 import logging
+from multiprocessing import Queue, Process
 
 import AO3
 from feedgen.entry import FeedEntry
@@ -45,10 +46,11 @@ def __base(series: AO3.Series, exclude_explicit=False):
     return feed, entries
 
 
-def __load(series_id: int, use_session: bool = False):
+# TODO: Refactor this mess
+def __load_sync(series_id: int, use_session: bool = False):
     """Returns the AO3 series with the given `series_id`, or a Response with an error if it was unsuccessful."""
     if use_session is False and series_id in _series_requiring_auth:
-        return __load(series_id, True)
+        return __load_sync(series_id, True)
     sess = session.get_session() if use_session else AO3.GuestSession()
     if sess is None:
         return None, make_response(render_template("auth_required.html"), 401)
@@ -58,7 +60,7 @@ def __load(series_id: int, use_session: bool = False):
         return series, None
     except AO3.utils.AuthError:
         if use_session is False:
-            series, err = __load(series_id, True)
+            series, err = __load_sync(series_id, True)
             if err is None:
                 _series_requiring_auth.append(series_id)
         else:
@@ -68,13 +70,38 @@ def __load(series_id: int, use_session: bool = False):
     except AttributeError as error:
         # Generally this is because the work is not publicly available (auth required)
         if use_session is False:
-            series, err = __load(series_id, True)
+            series, err = __load_sync(series_id, True)
             if err is None:
                 _series_requiring_auth.append(series_id)
         else:
             logging.error("Unknown error occurred while loading series %d: %s", series_id, error)
             series, err = None, make_response(render_template("unknown_error.html"), 500)
     return series, err
+
+
+def __load_set(series_id: int, queue: Queue):
+    """Sets the queue values."""
+    ret = queue.get()
+    ret['series'], ret['err'] = __load_sync(series_id)
+    queue.put(ret)
+
+
+def __load(series_id: int):
+    """Returns the AO3 work with the given `work_id`, or a Response with an error if it was unsuccessful."""
+    ret = {
+        'series': None,
+        'err': None
+    }
+    queue = Queue()
+    queue.put(ret)
+    loader = Process(target=__load_set, args=(series_id, queue))
+    loader.start()
+    loader.join(15)
+    if loader.is_alive():
+        loader.terminate()
+        return None, make_response(render_template("timeout.html"), 504)
+    ret = queue.get()
+    return ret['series'], ret['err']
 
 
 def atom(series_id: int, exclude_explicit=False):

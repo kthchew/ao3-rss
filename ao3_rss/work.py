@@ -7,6 +7,7 @@ Provides methods useful for creating feeds for AO3 works.
 import datetime
 import logging
 
+from multiprocessing import Process, Queue
 import AO3
 from feedgen.entry import FeedEntry
 from feedgen.feed import FeedGenerator
@@ -56,10 +57,11 @@ def __base(work: AO3.Work):
     return feed, entries
 
 
-def __load(work_id: int, use_session: bool = False):
+# TODO: Refactor this mess
+def __load_sync(work_id: int, use_session: bool = False):
     """Returns the AO3 work with the given `work_id`, or a Response with an error if it was unsuccessful."""
     if use_session is False and work_id in _works_requiring_auth:
-        return __load(work_id, True)
+        return __load_sync(work_id, True)
     sess = session.get_session() if use_session else AO3.GuestSession()
     if sess is None:
         return None, make_response(render_template("auth_required.html"), 401)
@@ -68,7 +70,7 @@ def __load(work_id: int, use_session: bool = False):
         return work, None
     except AO3.utils.AuthError:
         if use_session is False:
-            work, err = __load(work_id, True)
+            work, err = __load_sync(work_id, True)
             if err is None:
                 _works_requiring_auth.append(work_id)
         else:
@@ -78,7 +80,7 @@ def __load(work_id: int, use_session: bool = False):
     except AttributeError as error:
         # Generally this is because the work is not publicly available (auth required)
         if use_session is False:
-            work, err = __load(work_id, True)
+            work, err = __load_sync(work_id, True)
             if err is None:
                 _works_requiring_auth.append(work_id)
         else:
@@ -87,6 +89,31 @@ def __load(work_id: int, use_session: bool = False):
     if config.BLOCK_EXPLICIT_WORKS and work.rating == 'Explicit':
         work, err = None, make_response(render_template("explicit_block.html"), 403)
     return work, err
+
+
+def __load_set(work_id: int, queue: Queue):
+    """Sets the queue values."""
+    ret = queue.get()
+    ret['work'], ret['err'] = __load_sync(work_id)
+    queue.put(ret)
+
+
+def __load(work_id: int):
+    """Returns the AO3 work with the given `work_id`, or a Response with an error if it was unsuccessful."""
+    ret = {
+        'work': None,
+        'err': None
+    }
+    queue = Queue()
+    queue.put(ret)
+    loader = Process(target=__load_set, args=(work_id, queue))
+    loader.start()
+    loader.join(15)
+    if loader.is_alive():
+        loader.terminate()
+        return None, make_response(render_template("timeout.html"), 504)
+    ret = queue.get()
+    return ret['work'], ret['err']
 
 
 def atom(work_id: int):
