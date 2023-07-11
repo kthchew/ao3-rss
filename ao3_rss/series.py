@@ -76,6 +76,8 @@ def __load_sync(series_id: int, use_session: bool = False):
         else:
             logging.error("Unknown error occurred while loading series %d: %s", series_id, error)
             series, err = None, make_response(render_template("unknown_error.html"), 500)
+    except ConnectionError:
+        series, err = None, make_response(render_template("bad_gateway.html"), 502)
     return series, err
 
 

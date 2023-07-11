@@ -86,6 +86,8 @@ def __load_sync(work_id: int, use_session: bool = False):
         else:
             logging.error("Unknown error occurred while loading work %d: %s", work_id, error)
             work, err = None, make_response(render_template("unknown_error.html"), 500)
+    except ConnectionError:
+        work, err = None, make_response(render_template("bad_gateway.html"), 502)
     if config.BLOCK_EXPLICIT_WORKS and work.rating == 'Explicit':
         work, err = None, make_response(render_template("explicit_block.html"), 403)
     return work, err
