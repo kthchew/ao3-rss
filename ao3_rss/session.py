@@ -7,12 +7,14 @@ Provides tools needed to create a session with AO3.
 import logging
 
 import AO3
+from cachetools import cached, TTLCache
 
 from ao3_rss import config
 
 _SESSION = None
 
 
+@cached(cache=TTLCache(maxsize=1, ttl=1800))
 def get_session():
     """Returns a session with AO3. If no username and password are provided, no session is returned."""
     # pylint: disable=global-statement
