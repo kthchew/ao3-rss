@@ -8,6 +8,7 @@ import logging
 from multiprocessing import Queue, Process
 
 import AO3
+import requests.exceptions
 from feedgen.entry import FeedEntry
 from feedgen.feed import FeedGenerator
 from flask import make_response, render_template
@@ -76,7 +77,7 @@ def __load_sync(series_id: int, use_session: bool = False):
         else:
             logging.error("Unknown error occurred while loading series %d: %s", series_id, error)
             series, err = None, make_response(render_template("unknown_error.html"), 500)
-    except ConnectionError:
+    except (requests.exceptions.ConnectionError, requests.exceptions.SSLError):
         series, err = None, make_response(render_template("bad_gateway.html"), 502)
     return series, err
 

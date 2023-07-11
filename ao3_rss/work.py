@@ -9,6 +9,7 @@ import logging
 
 from multiprocessing import Process, Queue
 import AO3
+import requests.exceptions
 from feedgen.entry import FeedEntry
 from feedgen.feed import FeedGenerator
 from flask import make_response, render_template
@@ -88,7 +89,7 @@ def __load_sync(work_id: int, use_session: bool = False):
         else:
             logging.error("Unknown error occurred while loading work %d: %s", work_id, error)
             work, err = None, make_response(render_template("unknown_error.html"), 500)
-    except ConnectionError:
+    except (requests.exceptions.ConnectionError, requests.exceptions.SSLError):
         work, err = None, make_response(render_template("bad_gateway.html"), 502)
     return work, err
 
