@@ -67,6 +67,8 @@ def __load_sync(work_id: int, use_session: bool = False):
         return None, make_response(render_template("auth_required.html"), 401)
     try:
         work = AO3.Work(work_id, sess)
+        if config.BLOCK_EXPLICIT_WORKS and work.rating == 'Explicit':
+            return None, make_response(render_template("explicit_block.html"), 403)
         return work, None
     except AO3.utils.AuthError:
         if use_session is False:
@@ -88,8 +90,6 @@ def __load_sync(work_id: int, use_session: bool = False):
             work, err = None, make_response(render_template("unknown_error.html"), 500)
     except ConnectionError:
         work, err = None, make_response(render_template("bad_gateway.html"), 502)
-    if config.BLOCK_EXPLICIT_WORKS and work.rating == 'Explicit':
-        work, err = None, make_response(render_template("explicit_block.html"), 403)
     return work, err
 
 
