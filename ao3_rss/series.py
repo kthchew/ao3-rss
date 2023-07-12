@@ -93,7 +93,7 @@ def __load(series_id: int):
     signal.alarm(15)
     try:
         series, err = __load_sync(series_id, False)
-    except TimeoutError:
+    except (TimeoutError, requests.exceptions.ReadTimeout):
         return None, errors.TimeoutResponse
     signal.alarm(0)
     return series, err

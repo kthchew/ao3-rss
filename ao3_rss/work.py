@@ -103,7 +103,7 @@ def __load(work_id: int):
     signal.alarm(15)
     try:
         work, err = __load_sync(work_id, False)
-    except TimeoutError:
+    except (TimeoutError, requests.exceptions.ReadTimeout):
         return None, errors.TimeoutResponse
     else:
         signal.alarm(0)
