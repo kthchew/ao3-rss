@@ -5,6 +5,7 @@
 Provides methods useful for creating feeds for AO3 series.
 """
 import logging
+import os
 import signal
 
 import AO3
@@ -21,7 +22,8 @@ def __alarm_handler(signum, frame):
     raise TimeoutError
 
 
-signal.signal(signal.SIGALRM, __alarm_handler)
+if os.name != 'nt':
+    signal.signal(signal.SIGALRM, __alarm_handler)
 
 
 def __base(series: AO3.Series, exclude_explicit=False):
@@ -90,6 +92,8 @@ def __load_sync(series_id: int, use_session: bool = False):
 
 def __load(series_id: int):
     """Returns the AO3 series with the given `series_id`, or a Response with an error if it was unsuccessful."""
+    if os.name == 'nt':
+        return __load_sync(series_id)
     signal.alarm(15)
     try:
         series, err = __load_sync(series_id, False)

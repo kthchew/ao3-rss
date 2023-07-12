@@ -6,6 +6,7 @@ Provides methods useful for creating feeds for AO3 works.
 """
 import datetime
 import logging
+import os
 import signal
 
 import AO3
@@ -22,7 +23,8 @@ def __alarm_handler(signum, frame):
     raise TimeoutError
 
 
-signal.signal(signal.SIGALRM, __alarm_handler)
+if os.name != 'nt':
+    signal.signal(signal.SIGALRM, __alarm_handler)
 
 def __base(work: AO3.Work):
     feed = FeedGenerator()
@@ -100,14 +102,15 @@ def __load_sync(work_id: int, use_session: bool = False):
 
 def __load(work_id: int):
     """Returns the AO3 work with the given `work_id`, or a Response with an error if it was unsuccessful."""
+    if os.name == 'nt':
+        return __load_sync(work_id, False)
     signal.alarm(15)
     try:
         work, err = __load_sync(work_id, False)
     except (TimeoutError, requests.exceptions.ReadTimeout):
         return None, errors.TimeoutResponse
-    else:
-        signal.alarm(0)
-        return work, err
+    signal.alarm(0)
+    return work, err
 
 
 def atom(work_id: int):
