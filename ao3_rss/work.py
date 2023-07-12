@@ -109,7 +109,8 @@ def __load(work_id: int):
         work, err = __load_sync(work_id, False)
     except (TimeoutError, requests.exceptions.ReadTimeout):
         return None, errors.TimeoutResponse
-    signal.alarm(0)
+    finally:
+        signal.alarm(0)
     return work, err
 
 
