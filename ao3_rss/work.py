@@ -26,6 +26,7 @@ def __alarm_handler(signum, frame):
 if os.name != 'nt':
     signal.signal(signal.SIGALRM, __alarm_handler)
 
+
 def __base(work: AO3.Work):
     feed = FeedGenerator()
     feed.title(work.title)
@@ -99,6 +100,7 @@ def __load_sync(work_id: int, use_session: bool = False):
     except (requests.exceptions.ConnectionError, requests.exceptions.SSLError):
         work, err = None, errors.BadGatewayResponse
     return work, err
+
 
 def __load(work_id: int):
     """Returns the AO3 work with the given `work_id`, or a Response with an error if it was unsuccessful."""

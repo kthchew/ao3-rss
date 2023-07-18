@@ -85,7 +85,7 @@ def __load_sync(series_id: int, use_session: bool = False):
         else:
             logging.error("Unknown error occurred while loading series %d: %s", series_id, error)
             series, err = None, errors.UnknownErrorResponse
-    except (requests.exceptions.ConnectionError, requests.exceptions.SSLError):
+    except (requests.exceptions.ConnectionError, requests.exceptions.SSLError, AO3.utils.HTTPError):
         series, err = None, errors.BadGatewayResponse
     return series, err
 
