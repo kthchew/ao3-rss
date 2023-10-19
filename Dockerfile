@@ -1,4 +1,4 @@
-FROM python:3.12.0-slim
+FROM python:3.13.0a1-slim
 
 ENV ADDRESS=0.0.0.0
 ENV PORT=8000
