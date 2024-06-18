@@ -28,7 +28,7 @@ jobs:
         id: get_version
         run: echo "VERSION=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_OUTPUT
       - name: Build container image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           push: true
           context: .
@@ -40,7 +40,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
       - name: Build container image (Alpine)
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           push: true
           context: .
