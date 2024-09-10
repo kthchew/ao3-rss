@@ -1,4 +1,4 @@
-FROM python:3.12.5-alpine
+FROM python:3.12.6-alpine
 
 ENV ADDRESS=0.0.0.0
 ENV PORT=8000
