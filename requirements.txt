@@ -2,4 +2,4 @@ ao3-api~=2.3.0
 feedgen~=1.0.0
 Flask~=3.0.3
 cachetools~=5.5.0
-MarkupSafe~=2.1.5
+MarkupSafe~=3.0.0
