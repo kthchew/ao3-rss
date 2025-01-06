@@ -94,7 +94,7 @@ def __load(series_id: int):
     """Returns the AO3 series with the given `series_id`, or a Response with an error if it was unsuccessful."""
     if os.name == 'nt':
         return __load_sync(series_id)
-    signal.alarm(15)
+    signal.alarm(120)
     try:
         series, err = __load_sync(series_id, False)
     except (TimeoutError, requests.exceptions.ReadTimeout):

@@ -106,7 +106,7 @@ def __load(work_id: int):
     """Returns the AO3 work with the given `work_id`, or a Response with an error if it was unsuccessful."""
     if os.name == 'nt':
         return __load_sync(work_id, False)
-    signal.alarm(15)
+    signal.alarm(120)
     try:
         work, err = __load_sync(work_id, False)
     except (TimeoutError, requests.exceptions.ReadTimeout):
