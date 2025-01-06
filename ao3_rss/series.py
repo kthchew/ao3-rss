@@ -65,6 +65,8 @@ def __load_sync(series_id: int, use_session: bool = False):
         return None, errors.AuthRequiredResponse
     try:
         series = AO3.Series(series_id, sess)
+        # workaround while ao3-api doesn't support series pagination
+        series = AO3.Series(str(series_id) + "?page=" + str(series.nworks // 20 + 1), sess)
         _ = series.name  # trigger an error if the series was not loaded properly (e.g. auth required)
         return series, None
     except AO3.utils.AuthError:
