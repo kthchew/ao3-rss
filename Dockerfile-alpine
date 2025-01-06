@@ -16,4 +16,4 @@ COPY ./ao3_rss /app/ao3_rss
 
 USER 307:307
 
-CMD ["/bin/sh", "-c", "/usr/local/bin/gunicorn --bind $ADDRESS:$PORT ao3_rss.server:app"]
+CMD ["/bin/sh", "-c", "/usr/local/bin/gunicorn --bind $ADDRESS:$PORT --timeout 300 ao3_rss.server:app"]
