@@ -5,6 +5,7 @@
 Provides methods useful for creating feeds for AO3 series.
 """
 import logging
+import math
 import os
 import signal
 
@@ -66,7 +67,7 @@ def __load_sync(series_id: int, use_session: bool = False):
     try:
         series = AO3.Series(series_id, sess)
         # workaround while ao3-api doesn't support series pagination
-        series = AO3.Series(str(series_id) + "?page=" + str(series.nworks // 20 + 1), sess)
+        series = AO3.Series(str(series_id) + "?page=" + str(math.ceil(series.nworks / 20)), sess)
         _ = series.name  # trigger an error if the series was not loaded properly (e.g. auth required)
         return series, None
     except AO3.utils.AuthError:
